@@ -35,7 +35,7 @@ function printHelp() {
 }
 
 function rootFrom(args) {
-  return args.root ? path.resolve(String(args.root)) : process.cwd();
+  return args.root ? path.resolve(String(args.root)) : engine.getProjectRoot(process.cwd());
 }
 
 function activeOrThrow(root) {
