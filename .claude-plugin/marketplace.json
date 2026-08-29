@@ -4,14 +4,14 @@
     "name": "Azam4ik1"
   },
   "metadata": {
-    "description": "Deep-work ECC profile with orchestration, second-brain memory, security, design and exhaustive verification"
+    "description": "Executable ECC MAX profile with bounded agent graph, Second Brain, security, design, data/privacy, production readiness and verification"
   },
   "plugins": [
     {
       "name": "ecc-max",
       "source": "./",
-      "description": "Orchestrated ECC profile with focused specialist routing, persistent project memory, security, design, performance, E2E, strict hooks and continuous learning",
-      "version": "2.2.0-max.1",
+      "description": "Deep-work ECC profile with deterministic MAX graph, persistent project knowledge, strict gates and focused specialist routing",
+      "version": "2.2.0-max.2",
       "author": {
         "name": "Azam4ik1 (ECC MAX fork)"
       },
@@ -19,28 +19,29 @@
       "repository": "https://github.com/Azam4ik1/everything-claude-code",
       "license": "MIT",
       "keywords": [
-        "agents",
+        "agent-graph",
         "orchestration",
         "second-brain",
-        "skills",
-        "python",
         "security",
         "design",
+        "python",
         "testing",
-        "verification",
-        "automation"
+        "production-readiness",
+        "verification"
       ],
       "category": "workflow",
       "tags": [
+        "agent-graph",
         "agents",
-        "orchestration",
-        "second-brain",
+        "memory",
         "security",
         "design",
         "python",
-        "verification"
+        "testing",
+        "production-readiness",
+        "automation"
       ],
-      "strict": false
+      "strict": true
     }
   ]
 }
