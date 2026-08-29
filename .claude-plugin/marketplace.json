@@ -1,41 +1,44 @@
 {
-  "name": "ecc-lite",
+  "name": "ecc-max",
   "owner": {
     "name": "Azam4ik1"
   },
   "metadata": {
-    "description": "Focused ECC profile for Python, document-processing, automation, and agent-harness development"
+    "description": "Deep-work ECC profile with orchestration, second-brain memory, security, design and exhaustive verification"
   },
   "plugins": [
     {
-      "name": "ecc-lite",
+      "name": "ecc-max",
       "source": "./",
-      "description": "Reduced-collision ECC profile with 7 core agents, 9 focused skills, 7 operator commands, and minimal hooks by default",
-      "version": "2.2.0-lite.1",
+      "description": "Orchestrated ECC profile with focused specialist routing, persistent project memory, security, design, performance, E2E, strict hooks and continuous learning",
+      "version": "2.2.0-max.1",
       "author": {
-        "name": "Azam4ik1 (ECC Lite fork)"
+        "name": "Azam4ik1 (ECC MAX fork)"
       },
       "homepage": "https://github.com/Azam4ik1/everything-claude-code",
       "repository": "https://github.com/Azam4ik1/everything-claude-code",
       "license": "MIT",
       "keywords": [
         "agents",
+        "orchestration",
+        "second-brain",
         "skills",
         "python",
-        "tdd",
-        "code-review",
-        "document-processing",
+        "security",
+        "design",
+        "testing",
+        "verification",
         "automation"
       ],
       "category": "workflow",
       "tags": [
         "agents",
-        "skills",
+        "orchestration",
+        "second-brain",
+        "security",
+        "design",
         "python",
-        "tdd",
-        "code-review",
-        "document-processing",
-        "automation"
+        "verification"
       ],
       "strict": false
     }
