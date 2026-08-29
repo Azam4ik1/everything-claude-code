@@ -1,9 +1,9 @@
 {
-  "name": "ecc-lite",
-  "version": "2.2.0-lite.1",
-  "description": "Focused ECC profile for Python, document-processing, automation, and agent-harness development with reduced routing collisions",
+  "name": "ecc-max",
+  "version": "2.2.0-max.1",
+  "description": "Deep-work ECC profile with orchestrated engineering, second-brain memory, security, design, performance, E2E, verification, and continuous learning",
   "author": {
-    "name": "Azam4ik1 (ECC Lite fork)",
+    "name": "Azam4ik1 (ECC MAX fork)",
     "url": "https://github.com/Azam4ik1"
   },
   "homepage": "https://github.com/Azam4ik1/everything-claude-code",
@@ -11,27 +11,28 @@
   "license": "MIT",
   "keywords": [
     "claude-code",
+    "orchestration",
+    "second-brain",
     "python",
-    "agents",
-    "skills",
-    "tdd",
-    "code-review",
-    "document-processing",
+    "security",
+    "design",
+    "testing",
+    "verification",
     "automation",
-    "verification"
+    "continuous-learning"
   ],
   "userConfig": {
     "hooks_enabled": {
       "type": "boolean",
-      "title": "Enable ECC Lite hooks",
-      "description": "Run ECC lifecycle and safety automation.",
+      "title": "Enable ECC MAX hooks",
+      "description": "Run ECC lifecycle, memory, quality, governance and safety automation.",
       "default": true
     },
     "hook_profile": {
       "type": "string",
-      "title": "ECC Lite hook profile",
-      "description": "Minimal is the default to reduce hook overhead; standard and strict remain available.",
-      "default": "minimal"
+      "title": "ECC MAX hook profile",
+      "description": "MAX defaults to strict. Standard and minimal remain available when lower overhead is preferred.",
+      "default": "strict"
     }
   },
   "mcpServers": {},
@@ -44,7 +45,19 @@
     "./skills/verification-loop/SKILL.md",
     "./skills/eval-harness/SKILL.md",
     "./skills/iterative-retrieval/SKILL.md",
-    "./skills/strategic-compact/SKILL.md"
+    "./skills/strategic-compact/SKILL.md",
+    "./skills/security-review/SKILL.md",
+    "./skills/security-scan/SKILL.md",
+    "./skills/search-first/SKILL.md",
+    "./skills/continuous-agent-loop/SKILL.md",
+    "./skills/continuous-learning-v2/SKILL.md",
+    "./skills/cost-aware-llm-pipeline/SKILL.md",
+    "./skills/frontend-patterns/SKILL.md",
+    "./skills/accessibility/SKILL.md",
+    "./skills/e2e-testing/SKILL.md",
+    "./skills/second-brain/SKILL.md",
+    "./skills/max-orchestration/SKILL.md",
+    "./skills/design-excellence/SKILL.md"
   ],
   "commands": [
     "./commands/plan.md",
@@ -53,6 +66,8 @@
     "./commands/code-review.md",
     "./commands/quality-gate.md",
     "./commands/test-coverage.md",
-    "./commands/checkpoint.md"
+    "./commands/checkpoint.md",
+    "./commands/max.md",
+    "./commands/brain.md"
   ]
 }
