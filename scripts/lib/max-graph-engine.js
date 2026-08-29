@@ -70,6 +70,10 @@ function getActivePath(root = getProjectRoot()) {
   return path.join(getRuntimeDir(root), 'active.json');
 }
 
+function getLastPath(root = getProjectRoot()) {
+  return path.join(getRuntimeDir(root), 'last.json');
+}
+
 function runDir(root, runId) {
   return path.join(getRunsDir(root), runId);
 }
@@ -156,6 +160,52 @@ function loadActiveRun(root = getProjectRoot()) {
   const filePath = statePath(root, pointer.runId);
   if (!fs.existsSync(filePath)) return null;
   return loadStateFile(filePath);
+}
+
+function loadLatestRun(root = getProjectRoot()) {
+  const active = loadActiveRun(root);
+  if (active) return active;
+  const lastPath = getLastPath(root);
+  if (!fs.existsSync(lastPath)) return null;
+  try {
+    const pointer = JSON.parse(fs.readFileSync(lastPath, 'utf8'));
+    if (!pointer?.runId) return null;
+    const filePath = statePath(root, pointer.runId);
+    if (!fs.existsSync(filePath)) return null;
+    return loadStateFile(filePath);
+  } catch {
+    return null;
+  }
+}
+
+function listRuns(root = getProjectRoot()) {
+  const dir = getRunsDir(root);
+  if (!fs.existsSync(dir)) return [];
+  const results = [];
+  for (const name of fs.readdirSync(dir)) {
+    const file = statePath(root, name);
+    if (!fs.existsSync(file)) continue;
+    try {
+      const state = loadStateFile(file);
+      results.push({
+        runId: state.runId, task: state.task, status: state.status,
+        createdAt: state.createdAt, updatedAt: state.updatedAt,
+        completedAt: state.completedAt, abortedAt: state.abortedAt,
+        totalFailures: state.totalFailures
+      });
+    } catch { /* skip malformed historical run */ }
+  }
+  return results.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+
+function persistLastPointer(root, state) {
+  atomicWriteJson(getLastPath(root), {
+    schema: 'ecc.max.last.v1',
+    runId: state.runId,
+    task: state.task,
+    status: state.status,
+    updatedAt: state.updatedAt
+  });
 }
 
 function persistState(root, state) {
@@ -303,6 +353,7 @@ function markNode(rootArg, nodeId, status, evidence) {
   appendEvent(root, state.runId, { type: 'node.marked', nodeId, status: normalized, evidence: proof });
   if (state.status === 'completed') {
     appendEvent(root, state.runId, { type: 'run.completed' });
+    persistLastPointer(root, state);
     clearActivePointer(root, state.runId);
   }
   return state;
@@ -341,6 +392,7 @@ function abortRun(rootArg, reason) {
   state.abortReason = validateEvidence(reason, 'abort reason');
   persistState(root, state);
   appendEvent(root, state.runId, { type: 'run.aborted', reason: state.abortReason });
+  persistLastPointer(root, state);
   clearActivePointer(root, state.runId);
   return state;
 }
@@ -350,6 +402,13 @@ function getNextAction(state) {
   if (state.status === 'completed') return { kind: 'done', message: 'ECC MAX run is completed.' };
   if (state.status === 'aborted') return { kind: 'done', message: 'ECC MAX run was aborted.' };
   const failures = failedNodes(state);
+  if (state.status === 'blocked') {
+    return {
+      kind: 'budget_exhausted',
+      nodes: failures,
+      message: `Repair budget exhausted. Failed nodes: ${failures.join(', ') || 'none'}. User/operator intervention or abort is required.`
+    };
+  }
   if (failures.length > 0) {
     return {
       kind: 'repair',
@@ -433,9 +492,12 @@ module.exports = {
   getRuntimeDir,
   getRunsDir,
   getActivePath,
+  getLastPath,
   initRun,
   loadRun,
   loadActiveRun,
+  loadLatestRun,
+  listRuns,
   readyNodes,
   failedNodes,
   unresolvedNodes,
