@@ -1,45 +1,41 @@
 {
-  "name": "ecc",
+  "name": "ecc-lite",
   "owner": {
-    "name": "Affaan Mustafa",
-    "email": "me@affaanmustafa.com"
+    "name": "Azam4ik1"
   },
   "metadata": {
-    "description": "Harness-native ECC skills, hooks, rules, MCP conventions, and operator workflows"
+    "description": "Focused ECC profile for Python, document-processing, automation, and agent-harness development"
   },
   "plugins": [
     {
-      "name": "ecc",
+      "name": "ecc-lite",
       "source": "./",
-      "description": "Harness-native ECC operator layer - 68 agents, 286 skills, 94 legacy command shims, reusable hooks, rules, selective install profiles, and production-ready workflows for Claude Code, Codex, OpenCode, Cursor, and related agent harnesses",
-      "version": "2.2.0",
+      "description": "Reduced-collision ECC profile with 7 core agents, 9 focused skills, 7 operator commands, and minimal hooks by default",
+      "version": "2.2.0-lite.1",
       "author": {
-        "name": "Affaan Mustafa",
-        "email": "me@affaanmustafa.com"
+        "name": "Azam4ik1 (ECC Lite fork)"
       },
-      "homepage": "https://ecc.tools",
-      "repository": "https://github.com/affaan-m/ECC",
+      "homepage": "https://github.com/Azam4ik1/everything-claude-code",
+      "repository": "https://github.com/Azam4ik1/everything-claude-code",
       "license": "MIT",
       "keywords": [
         "agents",
         "skills",
-        "hooks",
-        "commands",
+        "python",
         "tdd",
         "code-review",
-        "security",
-        "best-practices"
+        "document-processing",
+        "automation"
       ],
       "category": "workflow",
       "tags": [
         "agents",
         "skills",
-        "hooks",
-        "commands",
+        "python",
         "tdd",
         "code-review",
-        "security",
-        "best-practices"
+        "document-processing",
+        "automation"
       ],
       "strict": false
     }
