@@ -30,7 +30,7 @@ function parseArgs(argv) {
 }
 
 function rootFrom(args) {
-  return args.root ? path.resolve(String(args.root)) : process.cwd();
+  return args.root ? path.resolve(String(args.root)) : brain.projectRoot(process.cwd());
 }
 
 function help() {
