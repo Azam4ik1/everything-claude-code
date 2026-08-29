@@ -12,6 +12,9 @@
  *
  * Per-batch timeout is proportional to the number of batches so the total
  * never exceeds the Stop hook budget (90 s reserved for overhead).
+ *
+ * ECC MAX extension: after formatting/typechecking, an active MAX graph is
+ * mechanically checked. An unresolved run blocks Stop with exit code 2.
  */
 
 'use strict';
@@ -25,30 +28,13 @@ const path = require('path');
 const { findProjectRoot, detectFormatter, resolveFormatterBin } = require('../lib/resolve-formatter');
 
 const MAX_STDIN = 1024 * 1024;
-// Total ms budget reserved for all batches (leaves headroom below the 300s Stop timeout)
 const TOTAL_BUDGET_MS = 270_000;
-
-// Characters cmd.exe treats as separators/operators when shell: true is used.
-// Includes spaces and parentheses to guard paths like "C:\Users\John Doe\...".
 const UNSAFE_PATH_CHARS = /[&|<>^%!\s()]/;
 
-/** Parse the accumulator text into a deduplicated array of file paths. */
 function parseAccumulator(raw) {
   return [...new Set(raw.split('\n').map(l => l.trim()).filter(Boolean))];
 }
 
-/**
- * Is this file part of an installed plugin or marketplace clone?
- *
- * Those trees are third-party checkouts we merely read. Formatting them writes
- * to code the user does not own, and when a repo's committed code has drifted
- * from its own formatter config the rewrite is large: an unrelated bugfix ends
- * up carrying hundreds of reformatted lines it never touched, which is enough
- * to sink the contribution it was meant to support.
- *
- * Checks both a project-local install root and the user-level one, mirroring
- * the lookup in scripts/harness-audit.js.
- */
 function isPluginClonePath(filePath, cwd = process.cwd(), homeDir = os.homedir()) {
   const resolved = path.resolve(filePath);
   const roots = [path.join(cwd, '.claude', 'plugins')];
@@ -123,9 +109,8 @@ function typecheckBatch(tsConfigDir, editedFiles, timeoutMs) {
 
   try {
     if (isWin) {
-      // .cmd files require shell: true on Windows
       const result = spawnSync(npxBin, args, { ...opts, shell: true });
-      if (result.error) return; // timed out or not found — non-blocking
+      if (result.error) return;
       if (result.status !== 0) {
         stdout = result.stdout || '';
         stderr = result.stderr || '';
@@ -163,7 +148,7 @@ function main() {
   try {
     raw = fs.readFileSync(accumFile, 'utf8');
   } catch {
-    return; // No accumulator — nothing edited this response
+    return;
   }
 
   try { fs.unlinkSync(accumFile); } catch { /* best-effort */ }
@@ -194,8 +179,6 @@ function main() {
     byTsConfigDir.get(tsDir).push(resolved);
   }
 
-  // Distribute the budget evenly across all batches so the cumulative total
-  // stays within the Stop hook wall-clock limit even in large monorepos.
   const totalBatches = byProjectRoot.size + byTsConfigDir.size;
   const perBatchMs = totalBatches > 0 ? Math.floor(TOTAL_BUDGET_MS / totalBatches) : 60_000;
 
@@ -203,19 +186,26 @@ function main() {
   for (const [tsDir, batch] of byTsConfigDir) typecheckBatch(tsDir, batch, perBatchMs);
 }
 
-/**
- * Exported so run-with-flags.js uses require() instead of spawnSync,
- * letting the 300s hooks.json timeout govern the full batch.
- *
- * @param {string} rawInput - Raw JSON string from stdin (Stop event payload)
- * @returns {string} The original input (pass-through)
- */
 function run(rawInput) {
   try {
     main();
   } catch (err) {
     process.stderr.write(`[Hook] stop-format-typecheck error: ${err.message}\n`);
   }
+
+  // ECC MAX: make an unresolved executable graph a real Stop blocker.
+  // This hook is already registered in standard/strict profiles, so MAX gains
+  // enforcement without adding a duplicate Stop entry to hooks.json.
+  try {
+    const maxGate = require('./max-stop-gate');
+    const gateResult = maxGate.run(rawInput);
+    if (gateResult && typeof gateResult === 'object' && Number.isInteger(gateResult.exitCode) && gateResult.exitCode !== 0) {
+      return gateResult;
+    }
+  } catch (err) {
+    process.stderr.write(`[ECC MAX] stop gate warning: ${err.message}\n`);
+  }
+
   return rawInput;
 }
 
@@ -234,12 +224,15 @@ if (require.main === module) {
   });
   process.stdin.on('end', () => {
     const output = run(stdinData);
-    // Never echo truncated stdin (invalid JSON would be reported as a Stop
-    // hook failure, #2090); flush stdout before exiting so large payloads
-    // are not cut at the pipe buffer.
     if (truncated) {
       process.stderr.write('[Hook] stop-format-typecheck: stdin exceeded 1MB; suppressing pass-through (fail-open)\n');
       process.exit(0);
+    }
+    if (output && typeof output === 'object') {
+      if (output.stderr) process.stderr.write(output.stderr);
+      if (output.stdout) process.stdout.write(output.stdout);
+      process.exit(output.exitCode || 0);
+      return;
     }
     if (!output) {
       process.exit(0);
