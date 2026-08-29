@@ -1,46 +1,67 @@
 ---
 name: second-brain
-description: Persistent project-memory protocol for ECC MAX. Use at the start/end of meaningful multi-step work to recover decisions, status, risks and learnings across sessions. Do not store secrets, credentials, private personal data, or raw transcripts.
-tools: Read, Write, Edit, Grep, Glob
+description: Persistent, searchable project-memory and lightweight knowledge-graph protocol for ECC MAX. Use at the start/end of meaningful work to recall decisions, risks and learnings across sessions. Never store secrets, credentials, private personal data, or raw transcripts.
+tools: Read, Write, Edit, Grep, Glob, Bash
 metadata:
   origin: ECC-MAX
 ---
 
 # Second Brain
 
-ECC already provides episodic session persistence through its SessionStart and Stop hooks. This skill adds a small durable project knowledge layer so important decisions survive beyond raw session summaries.
+ECC MAX has two complementary memory layers:
 
-## Memory layers
-1. Episodic: ECC session summaries — what happened recently.
-2. Semantic: stable facts about the project and architecture.
-3. Procedural: proven workflows and commands.
-4. Decision memory: decisions, alternatives and reasons.
-5. Risk memory: unresolved risks, assumptions and follow-ups.
+1. **Episodic continuity** — existing ECC SessionStart/Stop session summaries.
+2. **Durable project knowledge** — the self-contained Second Brain event store in `.claude/ecc-max/brain/`.
 
-## Project memory location
-Use `.claude/ecc-max/` when durable project memory is useful:
-- `STATE.md` — current goal, status, next actions.
-- `DECISIONS.md` — dated architectural/product decisions and rationale.
-- `LEARNINGS.md` — reusable lessons confirmed by evidence.
-- `RISKS.md` — unresolved risks, assumptions, blockers.
-- `DESIGN.md` — stable UI/UX direction and design-system choices when relevant.
+The durable layer is not a vector database. It is an inspectable append-only event log with deterministic lexical retrieval and explicit one-hop graph relations. That makes its claims auditable and usable offline; semantic/vector retrieval can be added later without changing the memory contract.
 
-Create only files that are needed. Keep them concise and diff-friendly.
+## CLI
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" <command>
+```
+
+## Memory model
+
+Types:
+- `fact` — stable verified project fact;
+- `decision` — choice + rationale/constraint;
+- `learning` — reusable evidence-backed lesson;
+- `risk` — unresolved assumption, blocker or hazard;
+- `design` — durable UX/design-system direction;
+- `procedure` — proven operational workflow;
+- `handoff` — concise continuation context.
+
+Relations:
+- `supports`
+- `depends_on`
+- `contradicts`
+- `supersedes`
+- `relates_to`
 
 ## Read protocol
+
 Before major work:
-- read existing relevant memory files;
-- verify stale claims against the codebase;
-- treat code/tests/current user instruction as higher authority than memory.
+1. run `status`;
+2. search with the user's task terms;
+3. inspect directly related memories;
+4. verify important claims against current code, tests or authoritative documentation;
+5. treat current user instruction and repository evidence as higher authority than memory.
+
+Search includes a small one-hop graph boost, so a matching decision can surface a linked risk or learning.
 
 ## Write protocol
-After meaningful work, record only information worth carrying to another session:
-- what changed and why;
-- decisions that constrain future work;
-- verified lessons;
-- unresolved risks and next action.
 
-Never write API keys, passwords, tokens, secrets, personal identifiers, sensitive user data, or speculative claims as facts.
+Store only information that should survive another session. Facts, decisions and learnings require an evidence/source field. Risks remain active until explicitly resolved. Superseded knowledge is marked rather than silently overwritten.
 
-## Conflict rule
-If memory conflicts with current code, tests, documentation, or explicit user instruction, flag the conflict and update memory after resolving it.
+The store rejects common private-key, API-token and password patterns. This is a backstop, not permission to store sensitive information.
+
+## Human-readable export
+
+Run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" export
+```
+
+This materializes `.claude/ecc-max/brain/INDEX.md` for inspection. The JSONL event log remains canonical.
