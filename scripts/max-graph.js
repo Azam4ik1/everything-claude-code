@@ -31,7 +31,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  process.stdout.write(`ECC MAX graph runner\n\nCommands:\n  init --task <text> [--force] [--failure-budget 8] [--retry-budget 3]\n  status [--json]\n  next [--json]\n  pass <node> --evidence <text>\n  fail <node> --evidence <text>\n  na <node> --reason <text>\n  retry <node> --evidence <repair evidence>\n  report [--output <file>]\n  gate\n  abort --reason <text>\n  graph [--json]\n\nRuntime state lives under .claude/ecc-max/runtime/ and is not project knowledge.\n`);
+  process.stdout.write(`ECC MAX graph runner\n\nCommands:\n  init --task <text> [--force] [--failure-budget 8] [--retry-budget 3]\n  status [--json]\n  history [--json]\n  next [--json]\n  pass <node> --evidence <text>\n  fail <node> --evidence <text>\n  na <node> --reason <text>\n  retry <node> --evidence <repair evidence>\n  report [--run <run-id>] [--output <file>]\n  gate\n  abort --reason <text>\n  graph [--json]\n\nRuntime state lives under .claude/ecc-max/runtime/ and is not project knowledge.\n`);
 }
 
 function rootFrom(args) {
@@ -42,6 +42,15 @@ function activeOrThrow(root) {
   const state = engine.loadActiveRun(root);
   if (!state) throw new Error('No active ECC MAX run. Start one with `max-graph init`.');
   return state;
+}
+
+function reportState(root, args) {
+  if (args.run) return engine.loadRun(root, String(args.run));
+  const active = engine.loadActiveRun(root);
+  if (active) return active;
+  const latest = engine.loadLatestRun(root);
+  if (!latest) throw new Error('No ECC MAX run history found.');
+  return latest;
 }
 
 function jsonOut(value) {
@@ -70,8 +79,21 @@ function main() {
       return;
     }
     case 'status': {
-      const state = activeOrThrow(root);
+      const state = engine.loadActiveRun(root);
+      if (!state) {
+        const latest = engine.loadLatestRun(root);
+        if (args.json) jsonOut({ active: null, latest });
+        else process.stdout.write(latest ? `No active run. Last run: ${latest.runId} (${latest.status}) — ${latest.task}\n` : 'No active ECC MAX run.\n');
+        return;
+      }
       if (args.json) jsonOut(state); else process.stdout.write(engine.renderStatus(state));
+      return;
+    }
+    case 'history': {
+      const runs = engine.listRuns(root);
+      if (args.json) jsonOut(runs);
+      else if (!runs.length) process.stdout.write('No ECC MAX run history.\n');
+      else for (const run of runs) process.stdout.write(`${run.runId}  ${run.status.padEnd(9)}  ${run.task}\n`);
       return;
     }
     case 'next': {
@@ -99,7 +121,7 @@ function main() {
       return;
     }
     case 'report': {
-      const state = activeOrThrow(root);
+      const state = reportState(root, args);
       const report = engine.renderReport(state);
       if (args.output) {
         const output = path.resolve(root, String(args.output));
