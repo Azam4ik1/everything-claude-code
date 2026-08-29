@@ -70,3 +70,33 @@ test('complete run clears active pointer only after final gate', () => {
   assert.equal(graph.loadActiveRun(root), null);
   assert.equal(fs.existsSync(graph.getActivePath(root)), false);
 });
+
+test('completed run remains available as latest history and report source', () => {
+  const root = tempRoot();
+  graph.initRun('Historical MAX run', { root });
+  while (true) {
+    const state = graph.loadActiveRun(root);
+    if (!state) break;
+    for (const id of graph.readyNodes(state)) {
+      const def = graph.GRAPH.find(node => node.id === id);
+      if (def.allowNA) graph.markNode(root, id, 'not_applicable', `${id} not applicable in history fixture`);
+      else pass(root, id);
+    }
+  }
+  const latest = graph.loadLatestRun(root);
+  assert.equal(latest.status, 'completed');
+  assert.equal(latest.task, 'Historical MAX run');
+  assert.equal(graph.listRuns(root)[0].runId, latest.runId);
+  assert.match(graph.renderReport(latest), /Historical MAX run/);
+});
+
+test('exhausted retry budget reports operator intervention instead of repair loop', () => {
+  const root = tempRoot();
+  graph.initRun('Budget fixture', { root, retryBudgetPerNode: 1, failureBudget: 5 });
+  pass(root, 'intake');
+  graph.markNode(root, 'memory', 'failed', 'unrecoverable memory conflict');
+  const state = graph.loadActiveRun(root);
+  assert.equal(state.status, 'blocked');
+  assert.equal(graph.getNextAction(state).kind, 'budget_exhausted');
+  assert.throws(() => graph.retryNode(root, 'memory', 'attempted repair'), /exhausted/);
+});
