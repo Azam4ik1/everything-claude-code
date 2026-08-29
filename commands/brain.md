@@ -1,16 +1,35 @@
 ---
-description: Read, summarize, or update ECC MAX project memory without storing secrets or raw transcripts.
-argument-hint: "[status | decisions | risks | learnings | sync]"
+description: Operate ECC MAX Second Brain: inspect, search, add, relate, resolve, or export durable project knowledge.
+argument-hint: "[status | search <query> | add ... | show <id> | relate ... | resolve ... | export]"
 ---
 
 # /brain
 
-Use the `second-brain` skill for `$ARGUMENTS`.
+Use the self-contained ECC MAX Second Brain CLI. It stores an append-only event log in `.claude/ecc-max/brain/`, supports typed memories and explicit graph relations, and rejects common secret/credential shapes.
 
-- `status`: summarize current project state and next actions.
-- `decisions`: show durable decisions and rationale.
-- `risks`: show unresolved risks/blockers.
-- `learnings`: show verified reusable lessons.
-- `sync`: reconcile memory with current code/tests and update stale entries.
+CLI entry point:
 
-Never persist credentials, secrets, tokens, private personal data, or unverified speculation as fact.
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" <command>
+```
+
+Common operations:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" status
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" search "authentication migration"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" add --type decision --title "..." --body "..." --evidence "..." --tags "auth,api"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" add --type risk --title "..." --body "..." --evidence "..."
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" relate <from-id> <to-id> --type depends_on --note "..."
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" resolve <risk-id> --note "verified resolution evidence"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/max-brain.js" export
+```
+
+Memory types: `fact`, `decision`, `learning`, `risk`, `design`, `procedure`, `handoff`.
+Relations: `supports`, `depends_on`, `contradicts`, `supersedes`, `relates_to`.
+
+Rules:
+- verify recalled memories against current code/tests before relying on them;
+- facts, decisions and learnings require evidence;
+- never persist credentials, tokens, private keys, private personal data or raw transcripts;
+- resolve or supersede stale memories rather than silently rewriting history.
