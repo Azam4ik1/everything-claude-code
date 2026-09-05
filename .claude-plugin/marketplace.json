@@ -1,43 +1,47 @@
 {
-  "name": "ecc-lite",
+  "name": "ecc-max",
   "owner": {
     "name": "Azam4ik1"
   },
   "metadata": {
-    "description": "Focused ECC profile for Python, document-processing, automation, and agent-harness development"
+    "description": "Executable ECC MAX profile with bounded agent graph, Second Brain, security, design, data/privacy, production readiness and verification"
   },
   "plugins": [
     {
-      "name": "ecc-lite",
+      "name": "ecc-max",
       "source": "./",
-      "description": "Reduced-collision ECC profile with 7 core agents, 9 focused skills, 7 operator commands, and minimal hooks by default",
-      "version": "2.2.0-lite.1",
+      "description": "Deep-work ECC profile with deterministic MAX graph, persistent project knowledge, strict gates and focused specialist routing",
+      "version": "2.2.0-max.2",
       "author": {
-        "name": "Azam4ik1 (ECC Lite fork)"
+        "name": "Azam4ik1 (ECC MAX fork)"
       },
       "homepage": "https://github.com/Azam4ik1/everything-claude-code",
       "repository": "https://github.com/Azam4ik1/everything-claude-code",
       "license": "MIT",
       "keywords": [
-        "agents",
-        "skills",
+        "agent-graph",
+        "orchestration",
+        "second-brain",
+        "security",
+        "design",
         "python",
-        "tdd",
-        "code-review",
-        "document-processing",
-        "automation"
+        "testing",
+        "production-readiness",
+        "verification"
       ],
       "category": "workflow",
       "tags": [
+        "agent-graph",
         "agents",
-        "skills",
+        "memory",
+        "security",
+        "design",
         "python",
-        "tdd",
-        "code-review",
-        "document-processing",
+        "testing",
+        "production-readiness",
         "automation"
       ],
-      "strict": false
+      "strict": true
     }
   ]
 }
